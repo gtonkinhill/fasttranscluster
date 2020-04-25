@@ -1,7 +1,7 @@
 import os, sys
 import argparse
-import pyfastx
 from datetime import datetime
+import pyfastx
 import numpy as np
 from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components
@@ -117,12 +117,13 @@ def main():
     # make sure trailing forward slash is present
     args.output_dir = os.path.join(args.output_dir, "")
 
-    index_to_sample = {}
+    samples = []
     sample_to_index = {}
     # get sample names by index from fasta
     for i, seq in enumerate(pyfastx.Fasta(args.msa, build_index=False)):
-        index_to_sample[i] = seq[0]
+        samples.append(seq[0])
         sample_to_index[seq[0]] = i
+    nsamples = len(samples)
 
     # load metadata
     sample_dates = {}
@@ -131,7 +132,7 @@ def main():
         for line in infile:
             line = line.strip().split(",")
             if line[0] not in sample_to_index: NameError("Missing date in metadata!")
-            sample_dates[sample_to_index[line[0]]] = datetime.fromisoformat(line[1]).timestamp()/SECONDS_IN_YEAR
+            sample_dates[sample_to_index[line[0]]] = (line[1], datetime.fromisoformat(line[1]).timestamp()/SECONDS_IN_YEAR)
 
     # run pairsnp
     snp_dist_file = args.output_dir + "pairsnp_sparse_dist.csv"
@@ -141,7 +142,7 @@ def main():
         ncpu = args.n_cpu)
 
     # run transcluster algorithm
-    trans_dist = calculate_trans_prob(
+    row_ind, col_ind, data = calculate_trans_prob(
         sparse_snp_dist = sparse_dist,
         sample_dates = sample_dates,
         K = args.trans_threshold,
@@ -151,14 +152,22 @@ def main():
 
     # generate clusters using single linkage algorithm
     sparse_dist_matrix = csr_matrix((data, (row_ind, col_ind)),
-                                          shape=(ncentroids, ncentroids))
+                                          shape=(nsamples, nsamples))
     sparse_dist_matrix = sparse_dist_matrix <= np.log(args.prob_threshold)
     n_components, labels = connected_components(
         csgraph=sparse_dist_matrix,
         directed=False,
         return_labels=True)
+    index_to_cluster = {}
+    for index, cluster in enumerate(labels):
+        index_to_cluster[index] = cluster
 
     # write results to file
+    cluster_output = args.output_dir + "transclusters.csv"
+    with open(cluster_output, 'w') as outfile:
+        outfile.write("sample,calendar_date,cluster\n")
+        for i, sample in enumerate(samples):
+            outfile.write(",".join([sample, sample_dates[i][0], str(index_to_cluster[i])]) + "\n")
 
     # plot results
 
