@@ -31,7 +31,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/gtonkinhill/fasttranscluster",
     install_requires=[
-        'numpy', 'scipy', 'plotly', 'pyfastx', 'datetime'
+        'numpy', 'scipy', 'plotly', 'pyfastx', 'datetime', 'numba'
     ],
     python_requires='>=3.6.0',
     packages=['fasttranscluster'],
