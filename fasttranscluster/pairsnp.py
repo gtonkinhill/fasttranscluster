@@ -7,6 +7,7 @@ def run_pairsnp(msa, snp_threshold, outputfile, ncpu=1):
 
     cmd = "pairsnp"
     cmd += " -d " + str(snp_threshold)
+    cmd += " -t " + str(ncpu)
     cmd += " -s"
     cmd += " " + msa
     cmd += " > " + outputfile
