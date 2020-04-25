@@ -5,6 +5,7 @@ import os
 import re
 import io
 
+
 # Get version strip
 def read(*names, **kwargs):
     with io.open(os.path.join(os.path.dirname(__file__), *names),
@@ -27,7 +28,8 @@ setup(
     name="fasttranscluster",
     version=find_version("fasttranscluster/__init__.py"),
     author="Gerry Tonkin-Hill",
-    description="A fast python and and c++ pipeline for clustering sequences using the 'transcluster' method",
+    description=
+    "A fast python and and c++ pipeline for clustering sequences using the 'transcluster' method",
     long_description_content_type="text/markdown",
     url="https://github.com/gtonkinhill/fasttranscluster",
     install_requires=[
@@ -45,8 +47,7 @@ setup(
         'Topic :: Scientific/Engineering :: Bio-Informatics',
     ],
     entry_points={
-        'console_scripts': [
-            'fasttranscluster = fasttranscluster.__main__:main'
-        ],
+        'console_scripts':
+        ['fasttranscluster = fasttranscluster.__main__:main'],
     },
 )

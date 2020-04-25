@@ -1,6 +1,7 @@
 import os
 import subprocess
 
+
 def run_pairsnp(msa, snp_threshold, outputfile, ncpu=1):
     # runs pairsnp and reads result into a numpy array
 
