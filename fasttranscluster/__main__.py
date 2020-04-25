@@ -9,10 +9,12 @@ from scipy.sparse.csgraph import connected_components
 from .pairsnp import run_pairsnp
 from .transcluster import calculate_trans_prob
 from .plots import plot_heatmap
+from .iqtree import run_iqtree_index_cases
 
 from .__init__ import __version__
 
 SECONDS_IN_YEAR = 31556952
+
 
 def get_options():
     description = 'Runs the pairsnp and transcluster algorithms.'
@@ -181,6 +183,14 @@ def main():
             outfile.write(",".join(
                 [sample, sample_dates[i][0],
                  str(index_to_cluster[i])]) + "\n")
+
+    # if requested build a phylogeny of index cases
+    if args.tree:
+        run_iqtree_index_cases(msa=args.msa,
+                               clusters=index_to_cluster,
+                               dates=sample_dates,
+                               outdir=args.output_dir,
+                               ncpu=args.n_cpu)
 
     # plot results
     heatmap_output = args.output_dir + "transmission_cluster.html"
