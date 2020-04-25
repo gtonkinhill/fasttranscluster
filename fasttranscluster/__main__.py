@@ -162,6 +162,9 @@ def main():
     for index, cluster in enumerate(labels):
         index_to_cluster[index] = cluster
 
+    if not args.quiet:
+        print("Number of inferred transmission clusters: ", n_components)
+
     # write results to file
     cluster_output = args.output_dir + "transclusters.csv"
     with open(cluster_output, 'w') as outfile:
@@ -170,6 +173,7 @@ def main():
             outfile.write(",".join([sample, sample_dates[i][0], str(index_to_cluster[i])]) + "\n")
 
     # plot results
+    # heatmap_plot()
 
     return
 

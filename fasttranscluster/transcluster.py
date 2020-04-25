@@ -13,7 +13,6 @@ def memoize(f):
     return helper
 
 def calculate_trans_prob(sparse_snp_dist, sample_dates, K, lamb, beta):
-
     # precalculate lgamma
     max_nk = max([t[2] for t in sparse_snp_dist]) + K
     lgamma = gammaln(np.arange(max_nk+2))
@@ -37,7 +36,6 @@ def lprob_transmission(N, K, delta, lamb, beta, lgamma):
         lprob = np.logaddexp(lprob,
             lprob_k_given_N(N, k, delta, lamb, beta, lgamma)
         )
-    
     return lprob
 
 @memoize
@@ -46,25 +44,36 @@ def lprob_k_given_N(N, k, delta, lamb, beta, lgamma):
     lprob = (N+1)*np.log(lamb)-delta*(lamb+beta)+k*np.log(beta)-lgamma[k+1]
     
     # ugly poisson cdf but allows for use of numba
-    pois_cdf = -lamb*delta
-    for i in range(N+1):
-        pois_cdf = np.logaddexp(
-            i*np.log(lamb*delta) - lgamma[i+1], 
-            pois_cdf)
-    
-    lprob -= pois_cdf
+    if delta > 0:
+        pois_cdf = -lamb*delta
+        for i in range(N+1):
+            pois_cdf = np.logaddexp(
+                i*np.log(lamb*delta) - lgamma[i+1], 
+                pois_cdf)
+        lprob -= pois_cdf
 
     integral = -lgamma[N+1]
     for i in range(N+k+1):
-        integral = np.logaddexp(
-            lgamma[N+k+1] - 
-            lgamma[i+1] - 
-            lgamma[N+k-i+1] + 
-            (N+k-i)*np.log(delta) + 
-            lgamma[i+1] - 
-            (i+1)*np.log(lamb+beta),
-            integral
-        )
+        if delta >0 :
+            integral = np.logaddexp(
+                lgamma[N+k+1] - 
+                lgamma[i+1] - 
+                lgamma[N+k-i+1] + 
+                (N+k-i)*np.log(delta) + 
+                lgamma[i+1] - 
+                (i+1)*np.log(lamb+beta),
+                integral
+            )
+        else:
+            integral = np.logaddexp(
+                lgamma[N+k+1] - 
+                lgamma[i+1] - 
+                lgamma[N+k-i+1] + 
+                lgamma[i+1] - 
+                (i+1)*np.log(lamb+beta),
+                integral
+            )
     lprob += integral
+
 
     return(lprob)
