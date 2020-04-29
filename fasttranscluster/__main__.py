@@ -182,7 +182,7 @@ def main():
         for i, sample in enumerate(samples):
             outfile.write(",".join(
                 [sample, sample_dates[i][0],
-                 str(index_to_cluster[i])]) + "\n")
+                 str(index_to_cluster[i]+1)]) + "\n")
 
     # if requested build a phylogeny of index cases
     if args.tree:

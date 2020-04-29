@@ -10,7 +10,7 @@ def run_iqtree_index_cases(msa, clusters, dates, outdir, ncpu=1):
     cluster_indexes = {}
     for i in dates:
         if (clusters[i] not in cluster_indexes) or (
-                cluster_indexes[clusters[i]][1] < dates[i][0]):
+                cluster_indexes[clusters[i]][1] > dates[i][0]):
             cluster_indexes[clusters[i]] = (i, dates[i][0])
     cluster_indexes = set([t[0] for t in cluster_indexes.values()])
 
@@ -18,7 +18,7 @@ def run_iqtree_index_cases(msa, clusters, dates, outdir, ncpu=1):
     with open(index_fasta, 'w') as outfile:
         for i, seq in enumerate(pyfastx.Fasta(msa, build_index=False)):
             if i in cluster_indexes:
-                outfile.write(">cluster_" + str(clusters[i]) + "_" + seq[0] +
+                outfile.write(">cluster_" + str(clusters[i]+1) + "_" + seq[0] +
                               "\n" + seq[1] + "\n")
 
     # run iqtree
