@@ -46,27 +46,32 @@ def lprob_transmission(N, K, delta, lamb, beta, lgamma):
 @memoize
 @jit(nopython=True)
 def lprob_k_given_N(N, k, delta, lamb, beta, lgamma):
-    lprob = (N + 1) * np.log(lamb) - delta * (
-        lamb + beta) + k * np.log(beta) - lgamma[k + 1]
 
-    # ugly poisson cdf but allows for use of numba
     if delta > 0:
-        pois_cdf = -lamb * delta
+        lprob = (N + 1) * np.log(lamb) - delta * (
+            lamb + beta) + k * np.log(beta) - lgamma[k + 1]
+
+        print("lprob, ", lprob)
+
+        # ugly poisson cdf but allows for use of numba
+        pois_cdf = -np.inf
         for i in range(N + 1):
             pois_cdf = np.logaddexp(i * np.log(lamb * delta) - lgamma[i + 1],
                                     pois_cdf)
+        pois_cdf -= lamb * delta
         lprob -= pois_cdf
+        
+        print("pois_cdf, ", pois_cdf)
 
-    integral = -lgamma[N + 1]
-    for i in range(N + k + 1):
-        if delta > 0:
+        integral = -np.inf
+        for i in range(N + k + 1):
             integral = np.logaddexp(
                 lgamma[N + k + 1] - lgamma[i + 1] - lgamma[N + k - i + 1] +
                 (N + k - i) * np.log(delta) + lgamma[i + 1] -
                 (i + 1) * np.log(lamb + beta), integral)
-        else:
-            integral = np.logaddexp(
-                lgamma[N + k + 1] - lgamma[i + 1] - lgamma[N + k - i + 1] +
-                lgamma[i + 1] - (i + 1) * np.log(lamb + beta), integral)
-    lprob += integral
+        
+        integral -= lgamma[N + 1]
+        lprob += integral
+    else:
+        lprob = (N+1)*np.log(lamb) + k*np.log(beta) + lgamma[N+k+1] - lgamma[N+1] -lgamma[k+1] - (N+k+1)*np.log(lamb+beta)
     return (lprob)

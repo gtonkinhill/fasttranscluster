@@ -9,7 +9,7 @@ from scipy.sparse.csgraph import connected_components
 from .pairsnp import run_pairsnp
 from .transcluster import calculate_trans_prob
 from .plots import plot_heatmap
-from .iqtree import run_iqtree_index_cases
+from .iqtree import run_iqtree_index_cases, run_iqtree_mrca_cases
 
 from .__init__ import __version__
 
@@ -46,10 +46,12 @@ def get_options():
     io_opts.add_argument(
         "--tree",
         dest="tree",
-        action='store_true',
-        default=False,
-        help=
-        "Toggles the pipeline to build a phylogeny of the initial sequences for each transmission cluster."
+        type=str,
+        default=None,
+        choices=['index', 'mrca'],
+        help=("Toggles the pipeline to build a phylogeny of the initial sequences for" +
+        " each transmission cluster. Can be based on either the first sequnece in each" +
+        " cluster 'index' or the MRCA of each cluster 'mrca")
     )
 
     # transcluster options
@@ -164,8 +166,7 @@ def main():
     # generate clusters using single linkage algorithm
     sparse_dist_matrix = csr_matrix((data, (row_ind, col_ind)),
                                     shape=(nsamples, nsamples))
-    sparse_dist_matrix = sparse_dist_matrix <= np.log(args.prob_threshold)
-    n_components, labels = connected_components(csgraph=sparse_dist_matrix,
+    n_components, labels = connected_components(csgraph=sparse_dist_matrix <= np.log(args.prob_threshold),
                                                 directed=False,
                                                 return_labels=True)
     index_to_cluster = {}
@@ -185,12 +186,19 @@ def main():
                  str(index_to_cluster[i]+1)]) + "\n")
 
     # if requested build a phylogeny of index cases
-    if args.tree:
+    if args.tree=='index':
         run_iqtree_index_cases(msa=args.msa,
                                clusters=index_to_cluster,
                                dates=sample_dates,
                                outdir=args.output_dir,
                                ncpu=args.n_cpu)
+    elif args.tree=='mrca':
+        run_iqtree_mrca_cases(msa=args.msa,
+                                clusters=index_to_cluster,
+                                dates=sample_dates,
+                                sparse_snp_dist=sparse_dist,
+                                outdir=args.output_dir,
+                                ncpu=args.n_cpu)
 
     # plot results
     heatmap_output = args.output_dir + "transmission_cluster.html"

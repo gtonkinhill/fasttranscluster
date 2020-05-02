@@ -13,9 +13,9 @@ clusters$calendar_date <- lubridate::as_date(clusters$calendar_date)
 interval_size <- 1
 
 # root tree using earliest sequence (it might be better to use an outgroup)
-node_dates <- clusters$calendar_date[match(gsub(".*_", "", tree$tip.label), as.character(clusters$sample))]
-root_node <- tree$tip.label[which.min(node_dates)]
-tree <- ape::root(tree, root_node)
+# node_dates <- clusters$calendar_date[match(gsub(".*_", "", tree$tip.label), as.character(clusters$sample))]
+# root_node <- tree$tip.label[which.min(node_dates)]
+# tree <- ape::root(tree, root_node)
 
 # relabel tree tips with cluster
 tree$tip.label <- gsub("_.*", "", gsub("cluster_", "", tree$tip.label))
