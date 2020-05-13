@@ -19,12 +19,12 @@ def run_iqtree_index_cases(msa, clusters, dates, outdir, ncpu=1):
     index_fasta = outdir + "index_seqs.fasta"
     date_file = outdir + "index_dates.tab"
     with open(index_fasta, 'w') as outfile, open(date_file, 'w') as datefile:
-        datefile.write("name\tdate\n")
         for i, seq in enumerate(pyfastx.Fasta(msa, build_index=False)):
             if i in cluster_indexes:
                 outfile.write(">cluster_" + str(clusters[i]+1) + "_" + seq[0] +
                               "\n" + seq[1] + "\n")
-                datefile.write(seq[0] + "\t" + dates[i][0] + "\n")
+                datefile.write("cluster_" + str(clusters[i]+1) + "_"  + seq[0] + 
+                              "\t" + dates[i][0] + "\n")
 
     # run iqtree
     cmd = "iqtree2"
@@ -32,7 +32,9 @@ def run_iqtree_index_cases(msa, clusters, dates, outdir, ncpu=1):
     cmd += " --date " + date_file
     cmd += " -nt " + str(ncpu)
     cmd += " -st DNA"
+    cmd += " -m GTR+G"
     cmd += " -quiet"
+    cmd += " --date-root 2020-01-01"
     cmd += " -redo"
 
     subprocess.run(cmd, shell=True, check=True)
@@ -89,6 +91,7 @@ def run_iqtree_mrca_cases(msa, clusters, dates, sparse_snp_dist, outdir, ncpu=1)
     cmd += " --date " + date_file
     cmd += " -nt " + str(ncpu)
     cmd += " -st DNA"
+    cmd += " -m GTR+G"
     cmd += " -quiet"
     cmd += " -redo"
 

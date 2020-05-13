@@ -7,7 +7,7 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import connected_components
 
 from .pairsnp import run_pairsnp
-from .transcluster import calculate_trans_prob
+from .transcluster import calculate_trans_prob, lprob_k_given_N
 from .plots import plot_heatmap
 from .iqtree import run_iqtree_index_cases, run_iqtree_mrca_cases
 
@@ -74,7 +74,7 @@ def get_options():
         help=
         ("probability threshold - samples are clustered together" +
          " where the implied number of transmissions k is less than or equal to K "
-         + " with a probability of P"),
+         + " with a probability of at least P"),
         type=float,
         default=0.8)
 
@@ -82,17 +82,23 @@ def get_options():
         "--clock_rate",
         dest="clock_rate",
         help=
-        "clock rate as defined in the transcluster paper (SNPs/genome/year)",
+        "clock rate as defined in the transcluster paper (SNPs/genome/year) default=0.9e-3 * 29903",
         type=float,
-        default=3)
+        default=0.9e-3 * 29903)
 
     transcluster.add_argument(
         "--trans_rate",
         dest="trans_rate",
         help=
-        "transmission rate as defined in the transcluster paper (transmissions/year)",
+        "transmission rate as defined in the transcluster paper (transmissions/year) default=73",
         type=float,
-        default=52)
+        default=73)
+
+    transcluster.add_argument("--save_probs",
+                        dest="save_probs",
+                        help="write out transmission probabilites (can be a large file)",
+                        action='store_true',
+                        default=False)
 
     # pairsnp options
     pairsnp = parser.add_argument_group('Pairsnp options')
@@ -157,16 +163,25 @@ def main():
                               ncpu=args.n_cpu)
 
     # run transcluster algorithm
+    if args.save_probs:
+        prob_out = args.output_dir + "transcluster_probabilities.csv"
+    else:
+        prob_out = None
     row_ind, col_ind, data = calculate_trans_prob(sparse_snp_dist=sparse_dist,
-                                                  sample_dates=sample_dates,
-                                                  K=args.trans_threshold,
-                                                  lamb=args.clock_rate,
-                                                  beta=args.trans_rate)
+                                                sample_dates=sample_dates,
+                                                K=args.trans_threshold,
+                                                lamb=args.clock_rate,
+                                                beta=args.trans_rate,
+                                                threshold=args.prob_threshold,
+                                                samplenames=samples,
+                                                outputfile=prob_out)
+    
 
     # generate clusters using single linkage algorithm
-    sparse_dist_matrix = csr_matrix((data, (row_ind, col_ind)),
-                                    shape=(nsamples, nsamples))
-    n_components, labels = connected_components(csgraph=sparse_dist_matrix <= np.log(args.prob_threshold),
+    sparse_dist_matrix = csr_matrix((data, 
+        (row_ind, col_ind)),
+        shape=(nsamples, nsamples))
+    n_components, labels = connected_components(csgraph=sparse_dist_matrix,
                                                 directed=False,
                                                 return_labels=True)
     index_to_cluster = {}
