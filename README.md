@@ -22,6 +22,12 @@ You will first need to install the c++ version of [pairsnp](https://github.com/g
 Next clone this repsitory and run the setup.py script as
 
 ```
+pip3 install git+https://github.com/gtonkinhill/fasttranscluster
+```
+
+or alternatively as
+
+```
 git clone https://github.com/gtonkinhill/fasttranscluster
 cd fasttranscluster
 python setup.py install
@@ -34,12 +40,10 @@ in the future...
 ## Parameters
 
 ```
-usage: fasttranscluster [-h] --msa MSA --dates METADATA -o OUTPUT_DIR
-                        [--tree {index,mrca}] [-K TRANS_THRESHOLD]
-                        [-P PROB_THRESHOLD] [--clock_rate CLOCK_RATE]
-                        [--trans_rate TRANS_RATE] [--save_probs]
-                        [--snp_threshold SNP_THRESHOLD] [-t N_CPU] [--quiet]
-                        [--version]
+usage: fasttranscluster [-h] --msa MSA --dates METADATA -o OUTPUT_DIR [--tree {index,mrca}]
+                        [-K TRANS_THRESHOLD] [-P PROB_THRESHOLD] [--clock_rate CLOCK_RATE]
+                        [--trans_rate TRANS_RATE] [--save_probs] [--snp_threshold SNP_THRESHOLD]
+                        [-t N_CPU] [--quiet] [--version]
 
 Runs the pairsnp and transcluster algorithms.
 
@@ -51,41 +55,34 @@ optional arguments:
   --version             show program's version number and exit
 
 Input/output:
-  --msa MSA             Location of fasta formatted multiple sequence
-                        alignment
-  --dates METADATA      Location of metadata in csv format. The first column
-                        must include the sequence names and the second column
-                        must include sampling dates.
+  --msa MSA             Location of fasta formatted multiple sequence alignment
+  --dates METADATA      Location of metadata in csv format. The first column must include the sequence
+                        names and the second column must include sampling dates.
   -o OUTPUT_DIR, --out_dir OUTPUT_DIR
                         location of an output directory
-  --tree {index,mrca}   Toggles the pipeline to build a phylogeny of the
-                        initial sequences for each transmission cluster. Can
-                        be based on either the first sequnece in each cluster
+  --tree {index,mrca}   Toggles the pipeline to build a phylogeny of the initial sequences for each
+                        transmission cluster. Can be based on either the first sequnece in each cluster
                         'index' or the MRCA of each cluster 'mrca
 
 transcluster options:
   -K TRANS_THRESHOLD, --trans_threshold TRANS_THRESHOLD
-                        transmission distance threshold - samples are
-                        clustered together where the implied number of
-                        transmissions k is less than or equal to K with a
-                        probability of P
+                        transmission distance threshold - samples are clustered together where the
+                        implied number of transmissions k is less than or equal to K with a probability
+                        of P
   -P PROB_THRESHOLD, --prob_threshold PROB_THRESHOLD
-                        probability threshold - samples are clustered together
-                        where the implied number of transmissions k is less
-                        than or equal to K with a probability of at least P
+                        probability threshold - samples are clustered together where the implied number
+                        of transmissions k is less than or equal to K with a probability of at least P
   --clock_rate CLOCK_RATE
-                        clock rate as defined in the transcluster paper
-                        (SNPs/genome/year) default=0.9e-3 * 29903
+                        clock rate as defined in the transcluster paper (SNPs/genome/year) default=1e-3
+                        * 29903
   --trans_rate TRANS_RATE
-                        transmission rate as defined in the transcluster paper
-                        (transmissions/year) default=73
-  --save_probs          write out transmission probabilites (can be a large
-                        file)
+                        transmission rate as defined in the transcluster paper (transmissions/year)
+                        default=73
+  --save_probs          write out transmission probabilites (can be a large file)
 
 Pairsnp options:
   --snp_threshold SNP_THRESHOLD
-                        SNP threshold used to sparsify initial SNP distance
-                        matrix
+                        SNP threshold used to sparsify initial SNP distance matrix
 ```
 
 ## Citation
