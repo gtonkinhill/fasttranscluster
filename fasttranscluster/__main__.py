@@ -82,9 +82,9 @@ def get_options():
         "--clock_rate",
         dest="clock_rate",
         help=
-        "clock rate as defined in the transcluster paper (SNPs/genome/year) default=0.9e-3 * 29903",
+        "clock rate as defined in the transcluster paper (SNPs/genome/year) default=1e-3 * 29903",
         type=float,
-        default=0.9e-3 * 29903)
+        default=1e-3 * 29903)
 
     transcluster.add_argument(
         "--trans_rate",
