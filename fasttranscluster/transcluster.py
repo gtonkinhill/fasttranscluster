@@ -16,15 +16,21 @@ def memoize(f):
     return helper
 
 
-def calculate_trans_prob(sparse_snp_dist, sample_dates, K, lamb, beta, threshold, 
-    samplenames=None, outputfile=None):
+def calculate_trans_prob(sparse_snp_dist,
+                         sample_dates,
+                         K,
+                         lamb,
+                         beta,
+                         threshold,
+                         samplenames=None,
+                         outputfile=None):
     if outputfile is not None:
         outfile = open(outputfile, 'w')
         outfile.write("sampleA,sampleB,snp_distance")
-        for k in range(K+1):
+        for k in range(K + 1):
             outfile.write("," + str(k))
         outfile.write("\n")
-    
+
     # precalculate lgamma
     max_nk = max([t[2] for t in sparse_snp_dist]) + K
     lgamma = gammaln(np.arange(max_nk + 2))
@@ -43,12 +49,16 @@ def calculate_trans_prob(sparse_snp_dist, sample_dates, K, lamb, beta, threshold
             lprob.append(lp)
             # write out log probabilities if requested.
             if outputfile is not None:
-                outfile.write(samplenames[i] + "," + samplenames[j] + "," + str(d))
-                for k in range(K+1):
-                    outfile.write("," + str(lprob_k_given_N(d, k, delta, lamb, beta, lgamma)))
+                outfile.write(samplenames[i] + "," + samplenames[j] + "," +
+                              str(d))
+                for k in range(K + 1):
+                    outfile.write(
+                        "," +
+                        str(lprob_k_given_N(d, k, delta, lamb, beta, lgamma)))
                 outfile.write("\n")
-                
-    outfile.close()
+
+    if outputfile is not None:
+        outfile.close()
 
     return row_ind, col_ind, lprob
 
@@ -56,7 +66,7 @@ def calculate_trans_prob(sparse_snp_dist, sample_dates, K, lamb, beta, threshold
 @memoize
 def lprob_transmission(N, K, delta, lamb, beta, lgamma):
     lprob = -np.inf
-    for k in range(K+1):
+    for k in range(K + 1):
         lprob = np.logaddexp(lprob,
                              lprob_k_given_N(N, k, delta, lamb, beta, lgamma))
     return lprob
@@ -77,16 +87,19 @@ def lprob_k_given_N(N, k, delta, lamb, beta, lgamma):
                                     pois_cdf)
         pois_cdf -= lamb * delta
         lprob -= pois_cdf
-        
+
         integral = -np.inf
         for i in range(N + k + 1):
             integral = np.logaddexp(
                 lgamma[N + k + 1] - lgamma[i + 1] - lgamma[N + k - i + 1] +
                 (N + k - i) * np.log(delta) + lgamma[i + 1] -
                 (i + 1) * np.log(lamb + beta), integral)
-        
+
         integral -= lgamma[N + 1]
         lprob += integral
     else:
-        lprob = (N+1)*np.log(lamb) + k*np.log(beta) + lgamma[N+k+1] - lgamma[N+1] -lgamma[k+1] - (N+k+1)*np.log(lamb+beta)
+        lprob = (N + 1) * np.log(lamb) + k * np.log(beta) + lgamma[
+            N + k +
+            1] - lgamma[N + 1] - lgamma[k +
+                                        1] - (N + k + 1) * np.log(lamb + beta)
     return (lprob)

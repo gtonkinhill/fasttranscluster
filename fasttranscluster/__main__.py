@@ -10,6 +10,7 @@ from .pairsnp import run_pairsnp
 from .transcluster import calculate_trans_prob, lprob_k_given_N
 from .plots import plot_heatmap
 from .iqtree import run_iqtree_index_cases, run_iqtree_mrca_cases
+from .vcfdist import vcf_dist
 
 from .__init__ import __version__
 
@@ -25,8 +26,13 @@ def get_options():
     io_opts.add_argument(
         "--msa",
         dest="msa",
-        required=True,
         help="Location of fasta formatted multiple sequence alignment")
+
+    io_opts.add_argument("--vcfs",
+                         dest="vcfs",
+                         help=("input vcf files"),
+                         type=str,
+                         nargs='+')
 
     io_opts.add_argument(
         "--dates",
@@ -49,10 +55,18 @@ def get_options():
         type=str,
         default=None,
         choices=['index', 'mrca'],
-        help=("Toggles the pipeline to build a phylogeny of the initial sequences for" +
-        " each transmission cluster. Can be based on either the first sequnece in each" +
-        " cluster 'index' or the MRCA of each cluster 'mrca")
-    )
+        help=
+        ("Toggles the pipeline to build a phylogeny of the initial sequences for"
+         +
+         " each transmission cluster. Can be based on either the first sequnece in each"
+         + " cluster 'index' or the MRCA of each cluster 'mrca"))
+
+    io_opts.add_argument(
+        "--heatmap",
+        dest="heatmap",
+        default=False,
+        action='store_true',
+        help=("Toggles the pipeline to generate an interactive heatmap"))
 
     # transcluster options
     transcluster = parser.add_argument_group('transcluster options')
@@ -94,11 +108,12 @@ def get_options():
         type=float,
         default=73)
 
-    transcluster.add_argument("--save_probs",
-                        dest="save_probs",
-                        help="write out transmission probabilites (can be a large file)",
-                        action='store_true',
-                        default=False)
+    transcluster.add_argument(
+        "--save_probs",
+        dest="save_probs",
+        help="write out transmission probabilites (can be a large file)",
+        action='store_true',
+        default=False)
 
     # pairsnp options
     pairsnp = parser.add_argument_group('Pairsnp options')
@@ -126,6 +141,13 @@ def get_options():
                         version='%(prog)s ' + __version__)
 
     args = parser.parse_args()
+
+    if (args.vcfs is None) and (args.msa is None):
+        raise ValueError("One option of '--vcfs' or '--msa' must be provided!")
+    elif (args.vcfs is not None) and (args.msa is not None):
+        raise ValueError(
+            "Only one option of '--vcfs' or '--msa' must be provided!")
+
     return (args)
 
 
@@ -138,9 +160,15 @@ def main():
     samples = []
     sample_to_index = {}
     # get sample names by index from fasta
-    for i, seq in enumerate(pyfastx.Fasta(args.msa, build_index=False)):
-        samples.append(seq[0])
-        sample_to_index[seq[0]] = i
+    if args.msa is not None:
+        for i, seq in enumerate(pyfastx.Fasta(args.msa, build_index=False)):
+            samples.append(seq[0])
+            sample_to_index[seq[0]] = i
+    else:
+        for i, vcf in enumerate(args.vcfs):
+            sam = os.path.splitext(os.path.basename(vcf))[0]
+            samples.append(sam)
+            sample_to_index[sam] = i
     nsamples = len(samples)
 
     # load metadata
@@ -155,32 +183,35 @@ def main():
                 line[1],
                 datetime.fromisoformat(line[1]).timestamp() / SECONDS_IN_YEAR)
 
-    # run pairsnp
-    snp_dist_file = args.output_dir + "pairsnp_sparse_dist.csv"
-    sparse_dist = run_pairsnp(msa=args.msa,
-                              snp_threshold=args.snp_threshold,
-                              outputfile=snp_dist_file,
-                              ncpu=args.n_cpu)
+    if args.msa is not None:
+        # run pairsnp
+        snp_dist_file = args.output_dir + "pairsnp_sparse_dist.csv"
+        sparse_dist = run_pairsnp(msa=args.msa,
+                                  snp_threshold=args.snp_threshold,
+                                  outputfile=snp_dist_file,
+                                  ncpu=args.n_cpu)
+    else:
+        # get pairwise distances from vcf
+        sparse_dist = vcf_dist(args.vcfs)
 
     # run transcluster algorithm
     if args.save_probs:
         prob_out = args.output_dir + "transcluster_probabilities.csv"
     else:
         prob_out = None
-    row_ind, col_ind, data = calculate_trans_prob(sparse_snp_dist=sparse_dist,
-                                                sample_dates=sample_dates,
-                                                K=args.trans_threshold,
-                                                lamb=args.clock_rate,
-                                                beta=args.trans_rate,
-                                                threshold=args.prob_threshold,
-                                                samplenames=samples,
-                                                outputfile=prob_out)
-    
+    row_ind, col_ind, data = calculate_trans_prob(
+        sparse_snp_dist=sparse_dist,
+        sample_dates=sample_dates,
+        K=args.trans_threshold,
+        lamb=args.clock_rate,
+        beta=args.trans_rate,
+        threshold=args.prob_threshold,
+        samplenames=samples,
+        outputfile=prob_out)
 
     # generate clusters using single linkage algorithm
-    sparse_dist_matrix = csr_matrix((data, 
-        (row_ind, col_ind)),
-        shape=(nsamples, nsamples))
+    sparse_dist_matrix = csr_matrix((data, (row_ind, col_ind)),
+                                    shape=(nsamples, nsamples))
     n_components, labels = connected_components(csgraph=sparse_dist_matrix,
                                                 directed=False,
                                                 return_labels=True)
@@ -198,26 +229,27 @@ def main():
         for i, sample in enumerate(samples):
             outfile.write(",".join(
                 [sample, sample_dates[i][0],
-                 str(index_to_cluster[i]+1)]) + "\n")
+                 str(index_to_cluster[i] + 1)]) + "\n")
 
     # if requested build a phylogeny of index cases
-    if args.tree=='index':
+    if args.tree == 'index':
         run_iqtree_index_cases(msa=args.msa,
                                clusters=index_to_cluster,
                                dates=sample_dates,
                                outdir=args.output_dir,
                                ncpu=args.n_cpu)
-    elif args.tree=='mrca':
+    elif args.tree == 'mrca':
         run_iqtree_mrca_cases(msa=args.msa,
-                                clusters=index_to_cluster,
-                                dates=sample_dates,
-                                sparse_snp_dist=sparse_dist,
-                                outdir=args.output_dir,
-                                ncpu=args.n_cpu)
+                              clusters=index_to_cluster,
+                              dates=sample_dates,
+                              sparse_snp_dist=sparse_dist,
+                              outdir=args.output_dir,
+                              ncpu=args.n_cpu)
 
     # plot results
-    heatmap_output = args.output_dir + "transmission_cluster.html"
-    plot_heatmap(sample_dates, index_to_cluster, heatmap_output)
+    if args.heatmap:
+        heatmap_output = args.output_dir + "transmission_cluster.html"
+        plot_heatmap(sample_dates, index_to_cluster, heatmap_output)
 
     return
 
