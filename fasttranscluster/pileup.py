@@ -2,7 +2,7 @@ import os
 import datatable as dt
 import numpy as np
 from collections import defaultdict
-from bitarray import bitarray
+from tqdm import tqdm
 
 MAX_LEN = 1000000
 
@@ -24,15 +24,10 @@ def pileup_dist(pileups,
     index = {}
     index_count = 0
 
-    for i, f in enumerate(pileups):
-        print(i)
+    for i, f in tqdm(enumerate(pileups)):
         sample_names.append(
             os.path.splitext(os.path.basename(f).replace('.gz', ''))[0])
-        # variants.append(
-        #     defaultdict(lambda: [
-        #         MAX_LEN * bitarray('1'), MAX_LEN * bitarray('1'), MAX_LEN *
-        #         bitarray('1'), MAX_LEN * bitarray('1')
-        #     ]))
+
         variants.append([])
         # variants.append(defaultdict(list))
         d = dt.fread(f)
@@ -80,18 +75,11 @@ def pileup_dist(pileups,
         variants[i].append(np.packbits(temp_array))
         temp_array[array_index] = 1
 
-        # for j in range(d.shape[0]):
-        #     variants[i][d[j, 'chrom']][0][d[j, 'pos']] = d[j, 'As']
-        #     variants[i][d[j, 'chrom']][1][d[j, 'pos']] = d[j, 'Cs']
-        #     variants[i][d[j, 'chrom']][2][d[j, 'pos']] = d[j, 'Gs']
-        #     variants[i][d[j, 'chrom']][3][d[j, 'pos']] = d[j, 'Ts']
-
     # calculate pairwise distances
     if not quiet:
         print('calculating distances...')
     distances = []
-    for i in range(len(pileups)):
-        print(i)
+    for i in tqdm(range(len(pileups))):
         for j in range(i + 1, len(pileups)):
             d = 0
             for chrom in variants[i]:
