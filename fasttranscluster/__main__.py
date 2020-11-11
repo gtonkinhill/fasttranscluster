@@ -178,10 +178,11 @@ def main():
         for line in infile:
             line = line.strip().split(",")
             if line[0] not in sample_to_index:
-                NameError("Missing date in metadata!")
-            sample_dates[sample_to_index[line[0]]] = (
-                line[1],
-                datetime.fromisoformat(line[1]).timestamp() / SECONDS_IN_YEAR)
+                print("Missing date in msa!", line)
+            else:
+                sample_dates[sample_to_index[line[0]]] = (
+                    line[1], datetime.fromisoformat(line[1]).timestamp() /
+                    SECONDS_IN_YEAR)
 
     if args.msa is not None:
         # run pairsnp
