@@ -19,7 +19,8 @@ def pileup_dist(pileups,
     variants = []
     ignore_pos = []
     for i, f in enumerate(pileups):
-        sample_names.append(os.path.splitext(os.path.basename(f))[0])
+        sample_names.append(
+            os.path.splitext(os.path.basename(f).replace('.gz', ''))[0])
         variants.append(defaultdict(lambda: np.ones((4, 1000000), dtype=bool)))
         d = dt.fread(f)
         As = ((d['A_fwd'].to_numpy() >= 1) & (d['A_rev'].to_numpy() >= 1) & (

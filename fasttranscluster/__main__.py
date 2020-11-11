@@ -178,12 +178,13 @@ def main():
             sample_to_index[seq[0]] = i
     elif args.vcfs is not None:
         for i, vcf in enumerate(args.vcfs):
-            sam = os.path.splitext(os.path.basename(vcf))[0]
+            sam = os.path.splitext(os.path.basename(vcf).replace('.gz', ''))[0]
             samples.append(sam)
             sample_to_index[sam] = i
     else:
         for i, pileup in enumerate(args.pileup):
-            sam = os.path.splitext(os.path.basename(pileup))[0]
+            sam = os.path.splitext(
+                os.path.basename(pileup).replace('.gz', ''))[0]
             samples.append(sam)
             sample_to_index[sam] = i
     nsamples = len(samples)
