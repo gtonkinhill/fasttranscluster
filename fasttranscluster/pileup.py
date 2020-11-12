@@ -57,22 +57,25 @@ def pileup_dist(pileups,
         for j, chrom in enumerate(d['chrom'].to_list()[0]):
             ind[j] = index[chrom]
 
+        if i == 0:
+            trim_length = MAX_LEN * len(index)
+
         array_index = ind * MAX_LEN + d['pos'].to_numpy().flatten()
         temp_array = np.ones(MAX_LEN * len(index), dtype=bool)
         temp_array[array_index] = d['As'].to_numpy().flatten()
-        variants[i].append(np.packbits(temp_array))
+        variants[i].append(np.packbits(temp_array[:trim_length]))
         temp_array[array_index] = 1
 
         temp_array[array_index] = d['Cs'].to_numpy().flatten()
-        variants[i].append(np.packbits(temp_array))
+        variants[i].append(np.packbits(temp_array[:trim_length]))
         temp_array[array_index] = 1
 
         temp_array[array_index] = d['Gs'].to_numpy().flatten()
-        variants[i].append(np.packbits(temp_array))
+        variants[i].append(np.packbits(temp_array[:trim_length]))
         temp_array[array_index] = 1
 
         temp_array[array_index] = d['Ts'].to_numpy().flatten()
-        variants[i].append(np.packbits(temp_array))
+        variants[i].append(np.packbits(temp_array[:trim_length]))
         temp_array[array_index] = 1
 
     # calculate pairwise distances
