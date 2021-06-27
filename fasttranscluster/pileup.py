@@ -9,7 +9,7 @@ MAX_LEN = 1000000
 
 def pileup_dist(pileups,
                 ignoreN=True,
-                min_ref_support=3,
+                min_ref_support=1,
                 mid_dist=9999999999999,
                 is_min=True,
                 quiet=False):
@@ -33,16 +33,16 @@ def pileup_dist(pileups,
         d = dt.fread(f)
         d[:,
           dt.update(As=(dt.f.A_fwd >= 1) & (dt.f.A_rev >= 1)
-                    & ((dt.f.A_fwd + dt.f.A_rev) >= 3))]
+                    & ((dt.f.A_fwd + dt.f.A_rev) >= 1))]
         d[:,
           dt.update(Cs=(dt.f.C_fwd >= 1) & (dt.f.C_rev >= 1)
-                    & ((dt.f.C_fwd + dt.f.C_rev) >= 3))]
+                    & ((dt.f.C_fwd + dt.f.C_rev) >= 1))]
         d[:,
           dt.update(Gs=(dt.f.G_fwd >= 1) & (dt.f.G_rev >= 1)
-                    & ((dt.f.G_fwd + dt.f.G_rev) >= 3))]
+                    & ((dt.f.G_fwd + dt.f.G_rev) >= 1))]
         d[:,
           dt.update(Ts=(dt.f.T_fwd >= 1) & (dt.f.T_rev >= 1)
-                    & ((dt.f.T_fwd + dt.f.T_rev) >= 3))]
+                    & ((dt.f.T_fwd + dt.f.T_rev) >= 1))]
         d[:, dt.update(has_entry=(dt.f.As | dt.f.Cs | dt.f.Gs | dt.f.Ts))]
 
         chroms = dt.unique(d['chrom']).to_numpy().flatten()
@@ -86,7 +86,7 @@ def pileup_dist(pileups,
         for j in range(i + 1, len(pileups)):
             d = 0
             for chrom in variants[i]:
-                d += len(index) * MAX_LEN - np.unpackbits(
+                d += trim_length - np.unpackbits(
                     (variants[i][0] & variants[j][0])
                     | (variants[i][1] & variants[j][1])
                     | (variants[i][2] & variants[j][2])
