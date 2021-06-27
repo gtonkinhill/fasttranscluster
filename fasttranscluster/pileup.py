@@ -3,6 +3,7 @@ import datatable as dt
 import numpy as np
 from collections import defaultdict
 from tqdm import tqdm
+from fasttranscluster.dirichlet_multinomial import find_dirichlet_priors
 
 MAX_LEN = 1000000
 
