@@ -2,6 +2,7 @@ import os, sys
 import argparse
 import numpy as np
 from tqdm import tqdm
+import gzip
 import pysam
 import pysamstats
 import pyfastx
@@ -41,15 +42,21 @@ def preprocess_pileup(alnfiles,
         print('Loading alignments...')
 
     # 0 (no evidence) /  1 (found) / 9 (unknown)
-    os.remove(outputfile)
-    with open(outputfile, 'ab') as outfile:
+    try:
+        os.remove(outputfile)
+    except OSError:
+        pass
+
+    with gzip.open(outputfile, 'ab') as outfile:
         for alnfile in alnfiles:
-            prefix,ext = os.path.splitext(os.path.basename(alnfile))
-            if ext=='.sam':
+            fs = os.path.basename(alnfile).split('.')
+            ext = fs[-1]
+            prefix = '.'.join(fs[:-1])
+            if ext=='sam':
                 samfile = pysam.AlignmentFile(alnfile, "r")
-            elif ext=='.bam':
+            elif ext=='bam':
                 samfile = pysam.AlignmentFile(alnfile, "rb")
-            elif ext=='.cram':
+            elif ext=='cram':
                 samfile = pysam.AlignmentFile(alnfile, "rc")
             else:
                 raise ValueError('File extension is not supported!')
@@ -94,7 +101,7 @@ def preprocess_pileup(alnfiles,
             if not quiet:
                 print("saving to file...")
             outfile.write(bytes(prefix + ',', 'utf-8'))
-            np.savetxt(outfile, all_counts, delimiter=',', newline=',', fmt='%0.5f')
+            np.savetxt(outfile, all_counts.reshape((1, all_counts.size)), delimiter=',', newline='\n', fmt='%0.5f')
             outfile.write(b"\n")
 
     return
@@ -232,6 +239,9 @@ def get_options(args):
 
 def main():
     args = get_options(sys.argv[1:])
+
+    # update file extension if needed
+    args.output_file = args.output_file.split('.')[0] + '.csv.gz'
 
     preprocess_pileup(
             alnfiles = args.input_files,

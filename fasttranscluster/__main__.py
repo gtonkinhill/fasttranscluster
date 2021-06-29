@@ -182,11 +182,11 @@ def main():
             samples.append(sam)
             sample_to_index[sam] = i
     else:
-        for i, pileup in enumerate(args.pileup):
-            sam = os.path.splitext(
-                os.path.basename(pileup).replace('.gz', ''))[0]
-            samples.append(sam)
-            sample_to_index[sam] = i
+        # get pairwise distances from pileups
+        samples, sample_to_index, sparse_dist = pileup_dist(args.pileup,
+            max_dist=args.snp_threshold,
+            quiet=args.quiet)
+
     nsamples = len(samples)
 
     # load metadata
@@ -212,9 +212,7 @@ def main():
     elif args.vcfs is not None:
         # get pairwise distances from vcf
         sparse_dist = vcf_dist(args.vcfs)
-    else:
-        # get pairwise distances from pileups
-        sparse_dist = pileup_dist(args.pileup)
+
 
     # run transcluster algorithm
     if args.save_probs:
