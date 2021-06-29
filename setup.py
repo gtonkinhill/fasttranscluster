@@ -38,7 +38,7 @@ setup(
     ],
     python_requires='>=3.6.0',
     packages=['fasttranscluster'],
-    keywords='transmission clustering pathogen covid sars-cov-2',
+    keywords='transmission clustering pathogen covid sars-cov-2 epidemiology',
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
