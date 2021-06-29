@@ -11,6 +11,7 @@ from .transcluster import calculate_trans_prob, lprob_k_given_N
 from .plots import plot_heatmap
 from .iqtree import run_iqtree_index_cases, run_iqtree_mrca_cases
 from .vcfdist import vcf_dist
+from .pileup import pileup_dist
 
 from .__init__ import __version__
 
@@ -31,6 +32,12 @@ def get_options():
     io_opts.add_argument("--vcfs",
                          dest="vcfs",
                          help=("input vcf files"),
+                         type=str,
+                         nargs='+')
+
+    io_opts.add_argument("--pileup",
+                         dest="pileup",
+                         help=("input pileup files"),
                          type=str,
                          nargs='+')
 
@@ -142,11 +149,16 @@ def get_options():
 
     args = parser.parse_args()
 
-    if (args.vcfs is None) and (args.msa is None):
-        raise ValueError("One option of '--vcfs' or '--msa' must be provided!")
-    elif (args.vcfs is not None) and (args.msa is not None):
+    if (args.vcfs is None) and (args.msa is None) and (args.pileup is None):
         raise ValueError(
-            "Only one option of '--vcfs' or '--msa' must be provided!")
+            "One option of '--pileup', '--vcfs' or '--msa' must be provided!")
+    c = 0
+    for param in [args.vcfs, args.msa, args.pileup]:
+        if param is not None: c += 1
+    if c > 1:
+        raise ValueError(
+            "Only one option of '--pileup', '--vcfs' or '--msa' must be provided!"
+        )
 
     return (args)
 
@@ -164,9 +176,15 @@ def main():
         for i, seq in enumerate(pyfastx.Fasta(args.msa, build_index=False)):
             samples.append(seq[0])
             sample_to_index[seq[0]] = i
-    else:
+    elif args.vcfs is not None:
         for i, vcf in enumerate(args.vcfs):
-            sam = os.path.splitext(os.path.basename(vcf))[0]
+            sam = os.path.splitext(os.path.basename(vcf).replace('.gz', ''))[0]
+            samples.append(sam)
+            sample_to_index[sam] = i
+    else:
+        for i, pileup in enumerate(args.pileup):
+            sam = os.path.splitext(
+                os.path.basename(pileup).replace('.gz', ''))[0]
             samples.append(sam)
             sample_to_index[sam] = i
     nsamples = len(samples)
@@ -181,8 +199,8 @@ def main():
                 print("Missing date in msa!", line)
             else:
                 sample_dates[sample_to_index[line[0]]] = (
-                line[1],
-                datetime.fromisoformat(line[1]).timestamp() / SECONDS_IN_YEAR)
+                    line[1], datetime.fromisoformat(line[1]).timestamp() /
+                    SECONDS_IN_YEAR)
 
     if args.msa is not None:
         # run pairsnp
@@ -191,9 +209,12 @@ def main():
                                   snp_threshold=args.snp_threshold,
                                   outputfile=snp_dist_file,
                                   ncpu=args.n_cpu)
-    else:
+    elif args.vcfs is not None:
         # get pairwise distances from vcf
         sparse_dist = vcf_dist(args.vcfs)
+    else:
+        # get pairwise distances from pileups
+        sparse_dist = pileup_dist(args.pileup)
 
     # run transcluster algorithm
     if args.save_probs:
