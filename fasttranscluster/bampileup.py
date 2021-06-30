@@ -15,7 +15,6 @@ def preprocess_pileup(alnfiles,
                 outputfile,
                 expected_freq_threshold=None,
                 keep_all=True,
-                min_hit_cov=3,
                 require_both_strands=True,
                 min_contig_length=1000,
                 max_depth=8000,
@@ -172,12 +171,6 @@ def get_options(args):
                                 "location is discounted if it is not found " +
                                 "with a coverage of ~100x"),
                           type=float)
-
-    pileup.add_argument("--min-cov",
-                          dest="min_cov",
-                          default=3,
-                          help="Minimum coverage to call a variant (default=3)",
-                          type=int)
     
     pileup.add_argument("--min-contig-length",
                           dest="min_contig_length",
@@ -248,7 +241,6 @@ def main():
             reference = args.reference,
             outputfile = args.output_file,
             expected_freq_threshold = args.threshold,
-            min_hit_cov = args.min_cov,
             require_both_strands = args.require_both_strands,
             keep_all = args.keep_all,
             min_contig_length = args.min_contig_length,

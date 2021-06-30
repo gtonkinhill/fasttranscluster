@@ -10,7 +10,6 @@ from .pairsnp import run_pairsnp
 from .transcluster import calculate_trans_prob, lprob_k_given_N
 from .plots import plot_heatmap
 from .iqtree import run_iqtree_index_cases, run_iqtree_mrca_cases
-from .vcfdist import vcf_dist
 from .pileup import pileup_dist
 
 from .__init__ import __version__
@@ -28,12 +27,6 @@ def get_options():
         "--msa",
         dest="msa",
         help="Location of fasta formatted multiple sequence alignment")
-
-    io_opts.add_argument("--vcfs",
-                         dest="vcfs",
-                         help=("input vcf files"),
-                         type=str,
-                         nargs='+')
 
     io_opts.add_argument("--pileup",
                          dest="pileup",
@@ -149,15 +142,15 @@ def get_options():
 
     args = parser.parse_args()
 
-    if (args.vcfs is None) and (args.msa is None) and (args.pileup is None):
+    if (args.msa is None) and (args.pileup is None):
         raise ValueError(
-            "One option of '--pileup', '--vcfs' or '--msa' must be provided!")
+            "One option of '--pileup'or '--msa' must be provided!")
     c = 0
-    for param in [args.vcfs, args.msa, args.pileup]:
+    for param in [args.msa, args.pileup]:
         if param is not None: c += 1
     if c > 1:
         raise ValueError(
-            "Only one option of '--pileup', '--vcfs' or '--msa' must be provided!"
+            "Only one option of '--pileup' or '--msa' can be provided!"
         )
 
     return (args)
@@ -176,11 +169,6 @@ def main():
         for i, seq in enumerate(pyfastx.Fasta(args.msa, build_index=False)):
             samples.append(seq[0])
             sample_to_index[seq[0]] = i
-    elif args.vcfs is not None:
-        for i, vcf in enumerate(args.vcfs):
-            sam = os.path.splitext(os.path.basename(vcf).replace('.gz', ''))[0]
-            samples.append(sam)
-            sample_to_index[sam] = i
     else:
         # get pairwise distances from pileups
         samples, sample_to_index, sparse_dist = pileup_dist(args.pileup,
@@ -209,9 +197,6 @@ def main():
                                   snp_threshold=args.snp_threshold,
                                   outputfile=snp_dist_file,
                                   ncpu=args.n_cpu)
-    elif args.vcfs is not None:
-        # get pairwise distances from vcf
-        sparse_dist = vcf_dist(args.vcfs)
 
 
     # run transcluster algorithm

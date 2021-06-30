@@ -24,7 +24,7 @@ def pileup_dist(pileups,
                 if line.strip()=='': continue
                 line = line.strip().split(',')
                 sample_names.append(line[0])
-                a = np.array(line[1:]).astype(np.float)
+                a = np.array(line[1:]).astype(float)
                 a = np.reshape(a, (int(a.size/4),4), order='C')
                 sample_arrays.append(a)
     
