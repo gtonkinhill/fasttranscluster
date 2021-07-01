@@ -40,7 +40,7 @@ jobs:
         cd ./pairsnp-cpp-0.2.0/
         ./configure
         make
-        make install
+        sudo make install
         cd ..
         python --version
         pip install -U pip
