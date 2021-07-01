@@ -35,6 +35,8 @@ cd fasttranscluster
 python setup.py install
 ```
 
+Note: due its dependency on `pysamstats`, the package does not currently support python versions >=3.9. I hope to resolve this soon.
+
 ### Conda
 
 in the future...
