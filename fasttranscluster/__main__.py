@@ -159,8 +159,10 @@ def get_options():
 def main():
     args = get_options()
 
-    # make sure trailing forward slash is present
-    args.output_dir = os.path.join(args.output_dir, "")
+    # create directory and make sure trailing forward slash is present
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+    args.output_dir = os.path.join(os.path.abspath(args.output_dir), "")
 
     samples = []
     sample_to_index = {}
