@@ -32,8 +32,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y --allow-unauthenticated libopenblas-dev liblapack-dev libboost-all-dev 
         wget http://sourceforge.net/projects/arma/files/armadillo-10.5.2.tar.xz
-        tar xf armadillo*
-        cd armadillo*
+        tar -xf armadillo-10.5.2.tar.xz
+        cd armadillo-10.5.2
         cmake . && make && sudo make install && cd ..
         wget https://github.com/gtonkinhill/pairsnp-cpp/archive/refs/tags/v0.2.0.tar.gz
         tar -xf v0.2.0.tar.gz
