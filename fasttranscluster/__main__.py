@@ -115,6 +115,13 @@ def get_options():
         action='store_true',
         default=False)
 
+    transcluster.add_argument(
+        "--log",
+        dest="log",
+        help="saves probability in log space to improve precision",
+        action='store_true',
+        default=False)
+
     # pairsnp options
     pairsnp = parser.add_argument_group('Pairsnp options')
     pairsnp.add_argument(
@@ -214,7 +221,8 @@ def main():
         beta=args.trans_rate,
         threshold=args.prob_threshold,
         samplenames=samples,
-        outputfile=prob_out)
+        outputfile=prob_out,
+        log=args.log)
 
     # generate clusters using single linkage algorithm
     sparse_dist_matrix = csr_matrix((data, (row_ind, col_ind)),

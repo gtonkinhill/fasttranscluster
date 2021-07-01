@@ -23,12 +23,13 @@ def calculate_trans_prob(sparse_snp_dist,
                          beta,
                          threshold,
                          samplenames=None,
-                         outputfile=None):
+                         outputfile=None,
+                         log=False):
     if outputfile is not None:
         outfile = open(outputfile, 'w')
-        outfile.write("sampleA,sampleB,snp_distance")
+        outfile.write("sampleA,sampleB,snp_distance,date_difference (days)")
         for k in range(K + 1):
-            outfile.write("," + str(k))
+            outfile.write(",K=" + str(k))
         outfile.write("\n")
 
     # precalculate lgamma
@@ -49,12 +50,15 @@ def calculate_trans_prob(sparse_snp_dist,
             lprob.append(lp)
             # write out log probabilities if requested.
             if outputfile is not None:
-                outfile.write(samplenames[i] + "," + samplenames[j] + "," +
-                              str(d))
+                outfile.write(",".join([samplenames[i], samplenames[j],
+                              str(d), str(int(np.ceil(delta*365)))]))
                 for k in range(K + 1):
+                    lkgN = lprob_k_given_N(d, k, delta, lamb, beta, lgamma)
+                    if not log:
+                        lkgN = np.exp(lkgN)
                     outfile.write(
                         "," +
-                        str(lprob_k_given_N(d, k, delta, lamb, beta, lgamma)))
+                        str(lkgN))
                 outfile.write("\n")
 
     if outputfile is not None:
