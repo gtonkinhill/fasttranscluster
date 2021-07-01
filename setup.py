@@ -49,6 +49,7 @@ setup(
     ],
     entry_points={
         'console_scripts':
-        ['fasttranscluster = fasttranscluster.__main__:main'],
+        ['fasttranscluster = fasttranscluster.__main__:main',
+        ['bampileup = fasttranscluster.bampileup:main']],
     },
 )

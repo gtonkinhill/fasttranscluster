@@ -44,9 +44,11 @@ in the future...
 ## Parameters
 
 ```
-usage: fasttranscluster [-h] --msa MSA --dates METADATA -o OUTPUT_DIR [--tree {index,mrca}]
-                        [-K TRANS_THRESHOLD] [-P PROB_THRESHOLD] [--clock_rate CLOCK_RATE]
-                        [--trans_rate TRANS_RATE] [--save_probs] [--snp_threshold SNP_THRESHOLD]
+usage: fasttranscluster [-h] [--msa MSA] [--pileup PILEUP [PILEUP ...]]
+                        --dates METADATA -o OUTPUT_DIR [--tree {index,mrca}]
+                        [--heatmap] [-K TRANS_THRESHOLD] [-P PROB_THRESHOLD]
+                        [--clock_rate CLOCK_RATE] [--trans_rate TRANS_RATE]
+                        [--save_probs] [--snp_threshold SNP_THRESHOLD]
                         [-t N_CPU] [--quiet] [--version]
 
 Runs the pairsnp and transcluster algorithms.
@@ -59,35 +61,94 @@ optional arguments:
   --version             show program's version number and exit
 
 Input/output:
-  --msa MSA             Location of fasta formatted multiple sequence alignment
-  --dates METADATA      Location of metadata in csv format. The first column must include the sequence
-                        names and the second column must include sampling dates.
+  --msa MSA             Location of fasta formatted multiple sequence
+                        alignment
+  --pileup PILEUP [PILEUP ...]
+                        input pileup files
+  --dates METADATA      Location of metadata in csv format. The first column
+                        must include the sequence names and the second column
+                        must include sampling dates.
   -o OUTPUT_DIR, --out_dir OUTPUT_DIR
                         location of an output directory
-  --tree {index,mrca}   Toggles the pipeline to build a phylogeny of the initial sequences for each
-                        transmission cluster. Can be based on either the first sequnece in each cluster
+  --tree {index,mrca}   Toggles the pipeline to build a phylogeny of the
+                        initial sequences for each transmission cluster. Can
+                        be based on either the first sequnece in each cluster
                         'index' or the MRCA of each cluster 'mrca
+  --heatmap             Toggles the pipeline to generate an interactive
+                        heatmap
 
 transcluster options:
   -K TRANS_THRESHOLD, --trans_threshold TRANS_THRESHOLD
-                        transmission distance threshold - samples are clustered together where the
-                        implied number of transmissions k is less than or equal to K with a probability
-                        of P
+                        transmission distance threshold - samples are
+                        clustered together where the implied number of
+                        transmissions k is less than or equal to K with a
+                        probability of P
   -P PROB_THRESHOLD, --prob_threshold PROB_THRESHOLD
-                        probability threshold - samples are clustered together where the implied number
-                        of transmissions k is less than or equal to K with a probability of at least P
+                        probability threshold - samples are clustered together
+                        where the implied number of transmissions k is less
+                        than or equal to K with a probability of at least P
   --clock_rate CLOCK_RATE
-                        clock rate as defined in the transcluster paper (SNPs/genome/year) default=1e-3
-                        * 29903
+                        clock rate as defined in the transcluster paper
+                        (SNPs/genome/year) default=1e-3 * 29903
   --trans_rate TRANS_RATE
-                        transmission rate as defined in the transcluster paper (transmissions/year)
-                        default=73
-  --save_probs          write out transmission probabilites (can be a large file)
+                        transmission rate as defined in the transcluster paper
+                        (transmissions/year) default=73
+  --save_probs          write out transmission probabilites (can be a large
+                        file)
 
 Pairsnp options:
   --snp_threshold SNP_THRESHOLD
-                        SNP threshold used to sparsify initial SNP distance matrix
+                        SNP threshold used to sparsify initial SNP distance
+                        matrix
 ```
+
+## Generate posterior allele frequencies
+
+Generate posterior allele frequencies as input to the pileup option
+
+```
+usage: bampileup [-h] -i INPUT_FILES [INPUT_FILES ...] -r REFERENCE -o
+                 OUTPUT_FILE [-c THRESHOLD]
+                 [--min-contig-length MIN_CONTIG_LENGTH]
+                 [--max-read-depth MAX_READ_DEPTH] [--min-mapq MIN_MAPQ]
+                 [--min-baseq MIN_BASEQ] [--filter-all] [--single-strand]
+                 [-t N_CPU] [--quiet] [--version]
+
+Preprocess read alignments ready for fasttranscluster
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -t N_CPU, --threads N_CPU
+                        number of threads to use (default=1)
+  --quiet               turns off some console output
+  --version             show program's version number and exit
+
+Input/output:
+  -i INPUT_FILES [INPUT_FILES ...], --input INPUT_FILES [INPUT_FILES ...]
+                        input sam/bam/cram files
+  -r REFERENCE, --ref REFERENCE
+                        input reference genome in fasta format
+  -o OUTPUT_FILE, --out OUTPUT_FILE
+                        location of an output file
+
+Pileup:
+  -c THRESHOLD, --threshold THRESHOLD
+                        Minimum posterior read frequency threshold. The
+                        default is set that a variant at a location is
+                        discounted if it is not found with a coverage of ~100x
+  --min-contig-length MIN_CONTIG_LENGTH
+                        Minimum contig length (default=1000)
+  --max-read-depth MAX_READ_DEPTH
+                        Maximum read depth considered (default=8000)
+  --min-mapq MIN_MAPQ   Minimum mapping quality (default=60)
+  --min-baseq MIN_BASEQ
+                        Minimum base quality (default=13)
+  --filter-all          turns on filtering of variants with support below the
+                        posterior frequency threshold
+  --single-strand       turns off the requirement that a variant is supported
+                        by both strands
+```
+
 
 ## Citation
 
