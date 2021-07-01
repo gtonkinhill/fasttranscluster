@@ -30,6 +30,7 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
+        sudo apt-get install build-essential
         sudo apt-get install -y --allow-unauthenticated libopenblas-dev liblapack-dev libboost-all-dev 
         wget http://sourceforge.net/projects/arma/files/armadillo-10.5.2.tar.xz
         tar -xf armadillo-10.5.2.tar.xz
@@ -45,7 +46,8 @@ jobs:
         python --version
         pip install -U pip
         pip install -U pytest
-        pip install pysam
+        pip install -U Cython
+        pip install -U pysam
 
     - name: Install
       run: pip install .
