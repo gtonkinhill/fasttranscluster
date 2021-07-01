@@ -48,6 +48,7 @@ jobs:
         pip install -U pytest
         pip install -U Cython
         pip install -U pysam
+        pip install -U pysamstats
 
     - name: Install
       run: pip install .
