@@ -1,0 +1,55 @@
+name: ftclust-CI
+
+on:
+  push:
+    branches:
+    - master
+    - devel
+  pull_request:
+    branches:
+    - master
+    - devel
+  schedule:
+    - cron:  '1 1 1 * *'
+
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.7, 3.8, 3.9]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --allow-unauthenticated libopenblas-dev liblapack-dev libboost-all-dev 
+        wget http://sourceforge.net/projects/arma/files/armadillo-9.100.5.tar.xz
+        tar xf armadillo*
+        cd armadillo*
+        cmake . && make && sudo make install && cd ..
+        wget https://github.com/gtonkinhill/pairsnp-cpp/archive/refs/tags/v0.2.0.tar.gz
+        tar -xf v0.2.0.tar.gz
+        cd ./pairsnp-cpp-0.2.0/
+        ./configure
+        make
+        make install
+        cd ..
+        python --version
+        pip install -U pip
+        pip install -U pytest
+
+    - name: Install
+      run: pip install .
+
+    - name: Validation Tests
+      run: pytest -W ignore -q --datafolder="${{ github.workspace }}/example_data/"
+
+

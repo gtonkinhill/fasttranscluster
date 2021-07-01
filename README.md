@@ -1,5 +1,7 @@
 # fasttranscluster
 
+[![Build Status](https://github.com/gtonkinhill/fasttranscluster/workflows/ftclust-CI/badge.svg)](https://github.com/gtonkinhill/fasttranscluster/actions)
+
 This is a python implementation of the [transcluster](https://github.com/JamesStimson/transcluster) algorithm. It makes use of [pairsnp](https://github.com/gtonkinhill/pairsnp) as well as a fast summation approach to infer the distribution of transmission probabilities very quickly. It should scale to over 100k genomes.
 
 ## Quick Start
