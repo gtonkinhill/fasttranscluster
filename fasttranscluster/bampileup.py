@@ -85,7 +85,7 @@ def preprocess_pileup(alnfiles,
             a0 = np.sum(alphas)
 
             if expected_freq_threshold is None:
-                expected_freq_threshold = alphas[1]/(np.sum(alphas) + 100)
+                expected_freq_threshold = alphas[1]/(np.sum(alphas) + 50)
             
             if not quiet:
                 print('Using frequency threshold:', expected_freq_threshold)
