@@ -10,7 +10,7 @@ This is a python implementation of the [transcluster](https://github.com/JamesSt
 
 ```
 mkdir transcluster_out
-fasttranscluster --msa ./example_data/msa.fa --dates ./example_data/meta_data.csv -o ./transcluster_out -K 5
+fasttranscluster --msa ./example_data/ambig.aln --dates ./example_data/dates_msa.csv -o ./transcluster_out -K 10 -P 0 --save_probs
 ```
 
 The probabilities for each transmission pair that passes the thresholds can be obtained by using the `--save_probs` flag.
@@ -34,8 +34,6 @@ git clone https://github.com/gtonkinhill/fasttranscluster
 cd fasttranscluster
 python setup.py install
 ```
-
-Note: due its dependency on `pysamstats`, the package does not currently support python versions >=3.9. I hope to resolve this soon.
 
 ### Conda
 
