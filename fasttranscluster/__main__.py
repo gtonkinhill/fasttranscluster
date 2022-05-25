@@ -205,7 +205,8 @@ def main():
         sparse_dist = run_pairsnp(msa=args.msa,
                                   snp_threshold=args.snp_threshold,
                                   outputfile=snp_dist_file,
-                                  ncpu=args.n_cpu)
+                                  ncpu=args.n_cpu,
+                                  sample_to_index=sample_to_index)
 
 
     # run transcluster algorithm

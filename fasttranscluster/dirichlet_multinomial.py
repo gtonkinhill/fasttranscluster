@@ -15,7 +15,7 @@ def find_dirichlet_priors(data, max_iter=1000, tol=1e-5, method='LOO'):
     data = data[np.count_nonzero(data, 1)>1, ]
     data.sort(axis=1)
     
-    # Now fite data
+    # Now fit data
     total_counts = np.sum(data, 1)
     alpha=np.mean(data, 0) + 0.5
     nalpha = np.zeros(K)

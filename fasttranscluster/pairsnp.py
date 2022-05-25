@@ -2,7 +2,7 @@ import os
 import subprocess
 
 
-def run_pairsnp(msa, snp_threshold, outputfile, ncpu=1):
+def run_pairsnp(msa, snp_threshold, outputfile, sample_to_index, ncpu=1):
     # runs pairsnp and reads result into a numpy array
 
     cmd = "pairsnp"
@@ -16,9 +16,11 @@ def run_pairsnp(msa, snp_threshold, outputfile, ncpu=1):
 
     # load output
     distances = []
-    with open(outputfile, 'r') as infile:
-        next(infile)
+    with open(outputfile, "r") as infile:
         for line in infile:
-            distances.append([int(t) for t in line.strip().split()])
+            line = line.strip().split()
+            distances.append(
+                [sample_to_index[line[0]], sample_to_index[line[1]], int(line[2])]
+            )
 
     return distances

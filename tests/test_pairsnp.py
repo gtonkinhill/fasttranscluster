@@ -7,10 +7,13 @@ def test_pairsnp(datafolder):
     fd, path = tempfile.mkstemp()
     try:
         os.close(fd)
-        distances = run_pairsnp(datafolder + 'ambig.aln', 10, path, ncpu=1)
+        sample_to_index = {'seq1':0, 'seq2':1, 'seq3':2, 'seq4':3, 'seq4':5, 'seq5':6}
+        distances = run_pairsnp(datafolder + 'ambig.aln', 10, path, sample_to_index, ncpu=1)
+        print(distances)
+        distances = [d[2] for d in distances]
     finally:
         os.remove(path)
 
-    assert distances == [[0, 1, 0], [0, 2, 2], [0, 3, 1], [0, 4, 1], [1, 2, 2], [1, 3, 2], [1, 4, 2], [2, 3, 3], [2, 4, 3], [3, 4, 0]]
+    assert distances == [0, 2, 1, 1, 2, 2, 2, 3, 3, 0]
 
     return
